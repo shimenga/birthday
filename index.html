@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神必彩蛋</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        #countdown {
+            font-size: 48px; /* 字体大小 */
+        }
+        #cake {
+            display: none;
+            margin-top: 20px;
+        }
+        #cake img {
+            width: 300px;
+        }
+        .small-text {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .firework {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="firework" class="firework"></canvas>
+    <div id="countdown">解锁倒计时:</div>
+    <div id="cake">
+        <img src="cake.png" alt="生日蛋糕" />
+        <div style="font-size: 36px;">生日快乐，天天开心</div>
+        <div class="small-text">技术有限，见谅</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('firework');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        function drawFirework(x, y) {
+            const particles = [];
+            const numParticles = 100;
+            for (let i = 0; i < numParticles; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    radius: Math.random() * 3 + 1,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    speed: Math.random() * 2 + 1,
+                    angle: Math.random() * 2 * Math.PI,
+                    life: 100
+                });
+            }
+            return particles;
+        }
+
+        function updateParticles(particles) {
+            particles.forEach((particle, index) => {
+                particle.x += Math.cos(particle.angle) * particle.speed;
+                particle.y += Math.sin(particle.angle) * particle.speed;
+                particle.life--;
+                if (particle.life <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+        }
+
+        function renderParticles(particles) {
+            particles.forEach(particle => {
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                ctx.fillStyle = particle.color;
+                ctx.fill();
+            });
+        }
+
+        let fireworks = [];
+        function startFireworks() {
+            setInterval(() => {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * (canvas.height / 2);
+                fireworks.push(drawFirework(x, y));
+            }, 1000);
+
+            setInterval(animate, 1000 / 60);
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            fireworks.forEach((firework, index) => {
+                updateParticles(firework);
+                renderParticles(firework);
+                if (firework.length === 0) {
+                    fireworks.splice(index, 1);
+                }
+            });
+        }
+
+        function updateCountdown() {
+            const targetDate = new Date("2024-12-23T00:00:00").getTime();
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("countdown").innerHTML = 
+                `解锁倒计时: ${days}天${hours}小时${minutes}分钟${seconds}秒`;
+
+            if (distance < 0) {
+                clearInterval(interval);
+                document.getElementById("countdown").style.display = "none";
+                document.getElementById("cake").style.display = "block";
+                document.title = "生日快乐，天天开心";
+                startFireworks();
+            }
+        }
+
+        const interval = setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
